@@ -1,19 +1,26 @@
-name: Build Windows Exe
-on: [push]
+name: Build and Release
+on:
+  push:
+    tags:
+      - 'v*' # Triggers when you push a tag like v1.0, v1.1, etc.
+
 jobs:
   build:
     runs-on: windows-latest
+    permissions:
+      contents: write # Needed to create the release
     steps:
-      - uses: actions/checkout@v3
-      - uses: actions/setup-python@v4
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
         with:
           python-version: '3.10'
       - name: Install PyInstaller
         run: pip install pyinstaller
       - name: Build EXE
-        run: pyinstaller --onefile --noconsole certbot_v3.py
-      - name: Upload Artifact
-        uses: actions/upload-artifact@v3
+        run: pyinstaller --onefile --noconsole certcalc.py
+      - name: Create Release
+        uses: softprops/action-gh-release@v1
         with:
-          name: CertOptimizer-Windows
-          path: dist/certbot_v3.exe
+          files: dist/certcalc.exe
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
